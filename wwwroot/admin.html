@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Админ-панель Navbat</title>
+    <style>
+        body { font-family: sans-serif; padding: 30px; background: #f8f9fa; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        h1 { grid-column: 1 / -1; color: #333; }
+        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px; }
+        th, td { padding: 10px; border: 1px solid #ddd; text-align: left; }
+        th { background: #007bff; color: white; }
+        input, select { padding: 8px; margin: 5px 0; border: 1px solid #ccc; border-radius: 4px; width: 100%; box-sizing: border-box; }
+        button { padding: 10px; cursor: pointer; border: none; border-radius: 4px; width: 100%; margin-top: 10px; font-weight: bold; }
+        .btn-add { background: #28a745; color: white; }
+        .btn-del { background: #dc3545; color: white; padding: 5px; width: auto; }
+    </style>
+</head>
+<body>
+
+    <h1>Панель администратора NAVBAT</h1>
+
+    <div class="card">
+        <h3>1. Управление категориями</h3>
+        <input type="text" id="catName" placeholder="Название папки (напр. КАРТЫ)">
+        <button class="btn-add" onclick="addCategory()">Создать категорию</button>
+
+        <table id="categoriesTable">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Название</th>
+                    <th>Удалить</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <div class="card">
+        <h3>2. Управление услугами</h3>
+        <input type="text" id="svcName" placeholder="Название услуги (напр. Открыть карту)">
+        <input type="text" id="svcPrefix" placeholder="Префикс (напр. K)">
+        
+        <label>Выберите категорию:</label>
+        <select id="svcCatId">
+            </select>
+        
+        <button class="btn-add" onclick="addService()">Добавить услугу</button>
+
+        <table id="servicesTable">
+            <thead>
+                <tr>
+                    <th>Услуга</th>
+                    <th>Категория</th>
+                    <th>Удалить</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:5108/api';
+
+        // --- ЛОГИКА КАТЕГОРИЙ ---
+
+        async function loadCategories() {
+            const res = await fetch(`${API_URL}/Categories`);
+            const data = await res.json();
+            
+            // Заполняем таблицу
+            const tbody = document.querySelector('#categoriesTable tbody');
+            tbody.innerHTML = data.map(c => `
+                <tr>
+                    <td>${c.id}</td>
+                    <td><b>${c.name}</b></td>
+                    <td><button class="btn-del" onclick="deleteCategory(${c.id})">❌</button></td>
+                </tr>
+            `).join('');
+
+            // Заполняем выпадающий список для услуг
+            const select = document.getElementById('svcCatId');
+            select.innerHTML = data.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+        }
+
+        async function addCategory() {
+            const name = document.getElementById('catName').value;
+            await fetch(`${API_URL}/Categories`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name })
+            });
+            document.getElementById('catName').value = '';
+            loadAll();
+        }
+
+        async function deleteCategory(id) {
+            if(confirm('ВНИМАНИЕ! Удаление категории удалит все её услуги. Продолжить?')) {
+                await fetch(`${API_URL}/Categories/${id}`, { method: 'DELETE' });
+                loadAll();
+            }
+        }
+
+        // --- ЛОГИКА УСЛУГ ---
+
+        async function loadServices() {
+            const res = await fetch(`${API_URL}/Services`);
+            const data = await res.json();
+            const tbody = document.querySelector('#servicesTable tbody');
+            tbody.innerHTML = data.map(s => `
+                <tr>
+                    <td>${s.name} (${s.prefix})</td>
+                    <td>ID Категории: ${s.categoryId}</td>
+                    <td><button class="btn-del" onclick="deleteService(${s.id})">❌</button></td>
+                </tr>
+            `).join('');
+        }
+
+        async function addService() {
+            const name = document.getElementById('svcName').value;
+            const prefix = document.getElementById('svcPrefix').value;
+            const categoryId = document.getElementById('svcCatId').value;
+
+            await fetch(`${API_URL}/Services`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, prefix, categoryId: parseInt(categoryId) })
+            });
+            
+            document.getElementById('svcName').value = '';
+            loadAll();
+        }
+
+        async function deleteService(id) {
+            await fetch(`${API_URL}/Services/${id}`, { method: 'DELETE' });
+            loadAll();
+        }
+
+        function loadAll() {
+            loadCategories();
+            loadServices();
+        }
+
+        loadAll();
+    </script>
+</body>
+</html>

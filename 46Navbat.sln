@@ -1,0 +1,24 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.2.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "46Navbat", "46Navbat.csproj", "{97A51D2A-1407-9D94-BC84-7F4A83166A0F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{97A51D2A-1407-9D94-BC84-7F4A83166A0F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{97A51D2A-1407-9D94-BC84-7F4A83166A0F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{97A51D2A-1407-9D94-BC84-7F4A83166A0F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{97A51D2A-1407-9D94-BC84-7F4A83166A0F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {C7589EB8-5D81-41CF-A891-BDA89DA17410}
+	EndGlobalSection
+EndGlobal

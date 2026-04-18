@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Панель Оператора - NAVBAT</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #1a1a2e; color: white; text-align: center; padding: 40px; }
+        .container { max-width: 900px; margin: 0 auto; }
+        h1 { color: #00d2ff; text-transform: uppercase; letter-spacing: 3px; }
+        
+        .operator-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
+            gap: 20px; margin-top: 40px; 
+        }
+
+        .panel {
+            background: #16213e;
+            padding: 25px;
+            border-radius: 15px;
+            border: 1px solid #0f3460;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .service-name { font-size: 22px; font-weight: bold; margin-bottom: 10px; color: #e94560; }
+        
+        .current-number { 
+            font-size: 48px; 
+            background: #0f3460; 
+            margin: 15px 0; 
+            padding: 10px; 
+            border-radius: 10px; 
+            color: #00d2ff;
+            min-height: 60px;
+        }
+
+        button {
+            background: linear-gradient(135deg, #00d2ff, #3a7bd5);
+            color: white; border: none; padding: 15px 30px;
+            font-size: 18px; font-weight: bold; border-radius: 8px;
+            cursor: pointer; width: 100%; transition: 0.3s;
+        }
+
+        button:hover { transform: scale(1.05); filter: brightness(1.2); }
+        button:active { transform: scale(0.95); }
+        
+        .status-msg { margin-top: 10px; font-size: 14px; color: #4a6a8a; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Панель Оператора</h1>
+    <p>Выберите кассу, чтобы вызвать следующего клиента</p>
+
+    <div id="operator-list" class="operator-grid">
+        </div>
+</div>
+
+<script>
+    const API_URL = 'http://localhost:5108/api';
+
+    // 1. Загружаем список услуг, чтобы создать панели для каждого оператора
+    async function loadOperatorPanels() {
+        try {
+            const response = await fetch(`${API_URL}/Services`);
+            const services = await response.json();
+            const list = document.getElementById('operator-list');
+            list.innerHTML = '';
+
+            services.forEach(svc => {
+                const panel = document.createElement('div');
+                panel.className = 'panel';
+                panel.innerHTML = `
+                    <div class="service-name">${svc.name}</div>
+                    <div class="status-msg">Сейчас обслуживается:</div>
+                    <div id="display-${svc.id}" class="current-number">---</div>
+                    <button onclick="callNext(${svc.id})">СЛЕДУЮЩИЙ</button>
+                    <div id="msg-${svc.id}" class="status-msg">Нажмите для вызова</div>
+                `;
+                list.appendChild(panel);
+            });
+        } catch (err) {
+            console.error("Ошибка загрузки сервисов", err);
+        }
+    }
+
+    // 2. Функция вызова следующего (метод PUT)
+    async function callNext(serviceId) {
+        const display = document.getElementById(`display-${serviceId}`);
+        const msg = document.getElementById(`msg-${serviceId}`);
+        
+        try {
+            // Отправляем PUT запрос
+            const response = await fetch(`${API_URL}/Tickets/next/${serviceId}`, {
+                method: 'PUT'
+            });
+
+            if (response.ok) {
+                const ticket = await response.json();
+                display.innerText = ticket.fullNumber; // Показываем номер (например A-1)
+                msg.innerText = "Клиент вызван!";
+                msg.style.color = "#00ff88";
+            } else {
+                display.innerText = "---";
+                msg.innerText = "Очередь пуста";
+                msg.style.color = "#ff4466";
+            }
+        } catch (err) {
+            msg.innerText = "Ошибка связи с сервером";
+            console.error(err);
+        }
+    }
+
+    // Запуск при открытии страницы
+    loadOperatorPanels();
+</script>
+
+</body>
+</html>

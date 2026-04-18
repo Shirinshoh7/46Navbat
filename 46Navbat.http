@@ -1,0 +1,6 @@
+@_46Navbat_HostAddress = http://localhost:5108
+
+GET {{_46Navbat_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
